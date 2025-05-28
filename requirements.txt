@@ -1,0 +1,7 @@
+flask
+streamlit
+pandas
+matplotlib
+plotly
+openai
+requests

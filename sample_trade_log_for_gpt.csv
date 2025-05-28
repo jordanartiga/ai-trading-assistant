@@ -1,0 +1,4 @@
+Entry,Exit,Result,Notes,Signal
+4168.5,4172.0,Win,Took long at VWAP rejection during pullback,Trade Signal: Long
+4170.0,4165.0,Loss,Shorted breakout but it failed and reversed,Trade Signal: Short
+4165.25,4172.75,Win,Bought after large absorption at support zone,Trade Signal: Long
