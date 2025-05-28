@@ -1,4 +1,4 @@
 Strategy,Result,Entry,Target,Diff,Confidence,Prediction
-Short-Term Reversal,WIN,4170,4180,10,90,Up
-Breakout Strategy,LOSS,4165,4175,5,75,Down
-VWAP Pullback,WIN,4172,4182,10,85,Up
+Breakout,WIN,4170,4180,10,92,Up
+Double Top,LOSS,4165,4170,5,80,Down
+Reversal,WIN,4172,4182,10,85,Up

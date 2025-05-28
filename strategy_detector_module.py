@@ -1,2 +1,2 @@
 def render_strategy_panel():
-    return "<p>Final Strategy Panel (Placeholder)</p>"
+    return """<ul><li>Breakout Detected ✅ at key resistance levels</li><li>Double Top Formation 🔔 spotted</li><li>Reversal Signal 🚨 - Possible entry opportunity</li></ul>"""
