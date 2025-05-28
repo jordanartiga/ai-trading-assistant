@@ -1,4 +1,4 @@
-# full_dashboard.py — Fully Rebuilt for Functional UI
+# full_dashboard.py — Final Version: Custom UI, Real-Time Detection, and Volume Profile
 
 from strategy_detector_module import render_strategy_panel
 from ai_prediction_module import render_prediction_panel
@@ -8,14 +8,13 @@ from gpt_strategy_detector import apply_strategy_detection
 
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-import os
-from streamlit_autorefresh import st_autorefresh
 import random
+from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(page_title="📈 AI Trading Assistant", layout="wide")
 
+# Custom Styling
 st.markdown("""
 <style>
 body, .reportview-container { background-color: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; }
@@ -31,8 +30,9 @@ body, .reportview-container { background-color: #0d1117; color: #c9d1d9; font-fa
 </style>
 """, unsafe_allow_html=True)
 
+# Sidebar Navigation
 st.sidebar.markdown("<h1 style='color:white;'>📈 AI Trading Assistant</h1>", unsafe_allow_html=True)
-st.sidebar.markdown("""<div><a href="#live">Live</a><br><a href="#dashboard">Dashboard</a><br><a href="#news">News</a><br><a href="#settings">Settings</a></div>""", unsafe_allow_html=True)
+st.sidebar.markdown("<div><a href='#live'>Live</a><br><a href='#dashboard'>Dashboard</a><br><a href='#news'>News</a><br><a href='#settings'>Settings</a></div>", unsafe_allow_html=True)
 refresh = st.sidebar.selectbox("Auto Refresh:", ["Off", "1s", "5s", "10s"])
 refresh_map = {"Off": 0, "1s": 1000, "5s": 5000, "10s": 10000}
 interval = refresh_map[refresh]
@@ -44,12 +44,7 @@ if uploaded_file:
     df = pd.read_csv(uploaded_file)
     st.sidebar.success(f"Loaded: {uploaded_file.name}")
 else:
-    default_path = os.path.join(os.path.dirname(__file__), "test_trade_log.csv")
-    if os.path.exists(default_path):
-        df = pd.read_csv(default_path)
-    else:
-        st.warning("No trade log found. Upload a CSV.")
-        df = pd.DataFrame({'Strategy': [], 'Result': [], 'Confidence': [], 'Prediction': []})
+    df = pd.read_csv("test_trade_log.csv")
 
 if 'Strategy' not in df.columns or df['Strategy'].isnull().all():
     df = apply_strategy_detection(df)
@@ -58,24 +53,31 @@ if 'Confidence' not in df.columns:
 if 'Prediction' not in df.columns:
     df['Prediction'] = [random.choice(['Up', 'Down']) for _ in range(len(df))]
 
+# News Banner
 news_df = get_today_news()
 if not news_df.empty:
     latest_news = news_df.iloc[0]
-    st.markdown(f"""<div class='card'><div class='card-header'>🚨 News Alert</div><div class='card-content'>{latest_news['Title']} (Impact: {latest_news['Impact']}) — {latest_news['Time']}</div></div>""", unsafe_allow_html=True)
+    st.markdown(f"<div class='card'><div class='card-header'>🚨 News Alert</div><div class='card-content'>{latest_news['Title']} (Impact: {latest_news['Impact']}) — {latest_news['Time']}</div></div>", unsafe_allow_html=True)
 else:
     st.markdown("<div class='card'><div class='card-header'>✅ No major news</div></div>", unsafe_allow_html=True)
 
+# Layout with Volume Profile and Custom Chart
 col1, col2 = st.columns([3, 2])
 with col1:
     st.markdown("<div class='section-title'>📈 Live MES Chart</div>", unsafe_allow_html=True)
     df_live = get_live_mes_data()
     if not df_live.empty:
+        df_live['price'] = df_live[['Open', 'High', 'Low', 'Close']].mean(axis=1)
+        df_live['price_bin'] = df_live['price'].round(2)
+        vol_profile = df_live.groupby('price_bin')['Volume'].sum().reset_index()
         fig = go.Figure()
         fig.add_trace(go.Candlestick(x=df_live['Time'], open=df_live['Open'], high=df_live['High'], low=df_live['Low'], close=df_live['Close'], increasing_line_color='#4caf50', decreasing_line_color='#f44336'))
-        fig.update_layout(height=500, plot_bgcolor='#0d1117', paper_bgcolor='#0d1117', font=dict(color='#c9d1d9'))
+        fig.add_trace(go.Bar(x=vol_profile['Volume'], y=vol_profile['price_bin'], orientation='h', width=0.2, marker=dict(color='rgba(63,185,80,0.6)'), showlegend=False, xaxis='x2'))
+        fig.update_layout(height=500, plot_bgcolor='#0d1117', paper_bgcolor='#0d1117', font=dict(color='#c9d1d9'), xaxis=dict(gridcolor='#444'), yaxis=dict(gridcolor='#444'))
         st.plotly_chart(fig, use_container_width=True)
     st.markdown("<div class='section-title'>🧾 Trade Log</div>", unsafe_allow_html=True)
     st.dataframe(df.head(10), use_container_width=True)
+
 with col2:
     st.markdown("<div class='section-title'>🧠 Strategy & AI</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='card'><div class='card-header'>Strategy Detector</div><div class='card-content'>{render_strategy_panel()}</div></div>", unsafe_allow_html=True)
