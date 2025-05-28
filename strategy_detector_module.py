@@ -1,2 +1,2 @@
 def render_strategy_panel():
-    return "<p>Sample Strategy Panel</p>"
+    return "<p>Final Strategy Panel (Placeholder)</p>"

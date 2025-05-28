@@ -1,2 +1,2 @@
 def render_prediction_panel():
-    return "<p>Sample Prediction Panel</p>"
+    return "<p>Final AI Prediction Panel (Placeholder)</p>"
