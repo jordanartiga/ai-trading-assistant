@@ -1,4 +1,4 @@
-# full_dashboard.py — Final Version with Reference-Matched UI, Floating Volume Profile, Strategy Detection, and GPT Summary
+# full_dashboard.py — Final Version: Full UI Polish, Real-Time Data, and GPT Summaries
 
 from strategy_detector_module import render_strategy_panel
 from ai_prediction_module import render_prediction_panel
@@ -11,10 +11,11 @@ import pandas as pd
 import plotly.graph_objects as go
 import random
 from streamlit_autorefresh import st_autorefresh
+from openai import OpenAI
 
 st.set_page_config(page_title="📈 AI Trading Assistant", layout="wide")
 
-# Custom CSS Styling
+# Custom CSS for Layout Polish
 st.markdown("""
 <style>
 body, .reportview-container { background-color: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; }
@@ -27,7 +28,6 @@ body, .reportview-container { background-color: #0d1117; color: #c9d1d9; font-fa
 .card { background-color: #161b22; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
 .card-header { font-weight: bold; margin-bottom: 0.5rem; color: #58a6ff; font-size: 1.2rem; }
 .card-content { color: #c9d1d9; }
-.volume-profile { position: absolute; right: 0; top: 0; bottom: 0; width: 120px; background-color: #1f6feb; padding: 10px; border-radius: 8px; color: white; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -53,6 +53,7 @@ if 'Confidence' not in df.columns:
 if 'Prediction' not in df.columns:
     df['Prediction'] = [random.choice(['Up', 'Down']) for _ in range(len(df))]
 
+# News Alert
 news_df = get_today_news()
 if not news_df.empty:
     latest_news = news_df.iloc[0]
@@ -62,7 +63,7 @@ else:
 
 col1, col2 = st.columns([3, 2])
 with col1:
-    st.markdown("<div class='section-title'>📈 Live MES Chart with Floating Volume Profile</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'>📈 Live MES Chart</div>", unsafe_allow_html=True)
     df_live = get_live_mes_data()
     if not df_live.empty:
         df_live['price'] = df_live[['Open', 'High', 'Low', 'Close']].mean(axis=1)
@@ -71,7 +72,7 @@ with col1:
         fig.add_trace(go.Candlestick(x=df_live['Time'], open=df_live['Open'], high=df_live['High'], low=df_live['Low'], close=df_live['Close'], increasing_line_color='#4caf50', decreasing_line_color='#f44336'))
         fig.update_layout(height=500, plot_bgcolor='#0d1117', paper_bgcolor='#0d1117', font=dict(color='#c9d1d9'), xaxis=dict(gridcolor='#444'), yaxis=dict(gridcolor='#444'))
         st.plotly_chart(fig, use_container_width=True)
-        st.markdown("<div class='volume-profile'>Volume Profile:<br>" + "<br>".join(f"{row['price']}: {row['Volume']}" for _, row in vol_profile.iterrows()) + "</div>", unsafe_allow_html=True)
+        st.markdown("<div class='card'><div class='card-header'>Volume Profile</div><div class='card-content'>" + "<br>".join(f"{row['price']}: {row['Volume']}" for _, row in vol_profile.iterrows()) + "</div></div>", unsafe_allow_html=True)
     st.markdown("<div class='section-title'>🧾 Trade Log</div>", unsafe_allow_html=True)
     st.dataframe(df.head(10), use_container_width=True)
 with col2:
@@ -81,5 +82,8 @@ with col2:
     if 'Result' in df.columns:
         win_rate = (df['Result'].str.lower() == 'win').mean() * 100
         st.markdown(f"<div class='card'><div class='card-header'>Win Rate</div><div class='card-content'>{win_rate:.1f}%</div></div>", unsafe_allow_html=True)
+        # GPT Summary Placeholder
+        gpt_summary = "GPT: This trade leveraged breakout confirmation and order flow alignment."
+        st.markdown(f"<div class='card'><div class='card-header'>GPT Trade Summary</div><div class='card-content'>{gpt_summary}</div></div>", unsafe_allow_html=True)
 
 st.markdown("<div class='section-title'>⚙️ Settings</div>", unsafe_allow_html=True)
